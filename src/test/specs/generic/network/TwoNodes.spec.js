@@ -18,7 +18,7 @@ describe('TwoNodes', () => {
                 established1 = true;
             });
 
-            PeerAddressBook.SEED_PEERS = [WsPeerAddress.seed('node1.test', 9000)];
+            PeerAddressBook.SEED_PEERS = [WsPeerAddress.seed('node1.test', 9000, netconfig.publicKey.toHex())];
 
             const consensus2 = await Consensus.volatileFull();
             consensus2.on('established', () => {
