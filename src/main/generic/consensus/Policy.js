@@ -95,7 +95,7 @@ class Policy {
      * @constant
      */
     static get BLOCK_TARGET_MAX() {
-        return BlockUtils.compactToTarget(0x1f00ffff); // 16 zero bits, bitcoin uses 32 (0x1d00ffff)
+        return Math.pow(2, 240);
     }
 }
 
@@ -157,7 +157,7 @@ Policy.TOTAL_SUPPLY = 21e14;
  * @type {number}
  * @constant
  */
-Policy.INITIAL_SUPPLY = 0;
+Policy.INITIAL_SUPPLY = 252000000000000;
 
 /**
  * Emission speed.
