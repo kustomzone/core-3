@@ -21,10 +21,12 @@ class MockPhy {
 class MockWebSocket extends Observable {
     /**
      * @constructor
-     * @param {string} address
+     * @param {string} [address]
      */
     constructor(address) {
         super();
+
+        // Can be undefined when created through a MockWebSocketServer
         /** @type {string} */
         this._localAddress = address;
         /** @type {DataChannel.ReadyState} */
@@ -46,7 +48,7 @@ class MockWebSocket extends Observable {
      * @returns {void}
      */
     link(channel) {
-        this._socket = { remoteAddress: channel.localAddress };
+        this._socket = channel.localAddress ? { remoteAddress: channel.localAddress } : undefined;
         this._phy = new MockPhy(channel);
         this.send = (msg) => this._phy.send(msg);
         this.close = () => channel.onclose();
@@ -57,17 +59,14 @@ class MockWebSocket extends Observable {
 class MockWebSocketServer extends Observable {
     /**
      * @constructor
-     * @param {string} address
      */
-    constructor(address) {
+    constructor() {
         super();
-        /** @type {string} */
-        this._localAddress = address;
     }
 
     /** @returns {MockWebSocket} */
     createMockWebSocket() {
-        return new MockWebSocket(this._localAddress);
+        return new MockWebSocket();
     }
 }
 
@@ -120,14 +119,13 @@ class MockNetwork {
 
         spyOn(WebSocketFactory, 'newWebSocketServer').and.callFake((netconfig) => {
             const peerAddress = netconfig.peerAddress;
-            const server = new MockWebSocketServer(MockNetwork._hostToIp(peerAddress.host));
+            const server = new MockWebSocketServer();
             MockNetwork._servers.set(`wss://${peerAddress.host}:${peerAddress.port}`, server);
             return server;
         });
 
         spyOn(WebSocketFactory, 'newWebSocket').and.callFake((url) => {
-            // XXX can this be done more elegantly?
-            const address = MockNetwork._hostToIp(url.split(/:\/*/)[1]);
+            const address = MockNetwork._hostToIp(`reserved${MockNetwork._clientSerial++}.test`);
 
             const client = new MockWebSocket(address);
             const server = MockNetwork._servers.get(url);
@@ -153,4 +151,5 @@ class MockNetwork {
 MockNetwork._servers = new Map();
 MockNetwork._delay = 0;
 MockNetwork._lossrate = 0;
+MockNetwork._clientSerial = 1;
 Class.register(MockNetwork);
